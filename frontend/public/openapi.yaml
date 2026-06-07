@@ -1,0 +1,184 @@
+openapi: 3.0.0
+info:
+  title: jzgateway API Reference
+  description: |
+    Welcome to the jzgateway API specification. 
+    This gateway acts as a high-performance, secure proxy bridging your client systems directly to game networks and top-up catalogs.
+    
+    All requests require authentication using your platform generated API Key passed via the `X-API-Key` request header.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local Dev Server
+  - url: https://api.jzgateway.com
+    description: Production Gateway
+paths:
+  /v1/order/create:
+    post:
+      summary: Create Top-up Order
+      description: |
+        Submits an order request to the gateway queue. The request returns immediately with a `202 Accepted` status. 
+        The order is processed asynchronously in the background. A webhook event is triggered upon status fulfillment.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product_id
+              properties:
+                partner_order_id:
+                  type: string
+                  description: Your internal unique identifier for tracking and idempotency.
+                  example: "TXN-90827"
+                product_id:
+                  type: string
+                  description: The variation ID of the product.
+                  example: "215570"
+                category_id:
+                  type: string
+                  description: Category identifier. E.g. "1" for Direct Top-up, "2" for eVoucher.
+                  example: "1"
+                quantity:
+                  type: integer
+                  description: Number of items.
+                  default: 1
+                  example: 1
+                fields:
+                  type: object
+                  description: Product-specific parameters required by the destination game or provider.
+                  example:
+                    Player ID: "873612"
+                    Server: "Asia"
+      responses:
+        '202':
+          description: Order queued for background processing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                    example: "process:6287222"
+                  orderId:
+                    type: string
+                    example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                  status:
+                    type: string
+                    example: "queued"
+        '400':
+          description: Bad Request (Invalid parameters or missing credentials configuration)
+        '401':
+          description: Unauthorized (Invalid or missing API key)
+        '429':
+          description: Rate limit exceeded
+
+  /v1/order/{orderId}:
+    get:
+      summary: Get Order Details
+      description: Fetches full database logs and status information for a specific order using the platform's order ID.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      partner_order_id:
+                        type: string
+                      product_id:
+                        type: string
+                      quantity:
+                        type: integer
+                      status:
+                        type: string
+                      created_at:
+                        type: string
+
+  /v1/order/by-partner/{partnerOrderId}:
+    get:
+      summary: Get Order by Partner ID
+      description: Fetches details for an order using your custom partner order identifier.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: partnerOrderId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "TXN-90827"
+      responses:
+        '200':
+          description: OK
+
+  /v1/products:
+    get:
+      summary: List Products
+      description: Fetches products from the active catalog filtered by category.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: category_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: The category identifier (defaults to "50").
+          example: "50"
+      responses:
+        '200':
+          description: OK
+
+  /v1/products/{productId}:
+    get:
+      summary: Get Product Details
+      description: Fetches details and required dynamic input fields for a specific product variation.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "215570"
+      responses:
+        '200':
+          description: OK
+
+  /v1/categories:
+    get:
+      summary: List Product Categories
+      description: Fetches all active catalog categories.
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key

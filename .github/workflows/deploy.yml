@@ -1,0 +1,118 @@
+name: Deploy Stack to AWS EC2
+
+on:
+  push:
+    branches:
+      - main  # Trigger build on push to main branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 1. Build and Push Backend
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/jzgateway-backend:latest
+
+      # 2. Build and Push Frontend
+      - name: Build and Push Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/jzgateway-frontend:latest
+
+      # 3. Deploy to EC2 via SSH
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            mkdir -p ~/app
+            cd ~/app
+            
+            # Write out the production docker-compose.yml on the server
+            cat << 'EOF' > docker-compose.yml
+            version: '3.8'
+            services:
+              postgres:
+                image: postgres:16
+                container_name: jzgateway-postgres
+                environment:
+                  POSTGRES_DB: goldbridge
+                  POSTGRES_USER: user
+                  POSTGRES_PASSWORD: password
+                ports:
+                  - "127.0.0.1:5432:5432"
+                volumes:
+                  - postgres_data:/var/lib/postgresql/data
+                networks:
+                  - jzgateway-network
+
+              redis:
+                image: redis:7-alpine
+                container_name: jzgateway-redis
+                ports:
+                  - "127.0.0.1:6379:6379"
+                networks:
+                  - jzgateway-network
+
+              backend:
+                image: ${{ secrets.DOCKERHUB_USERNAME }}/jzgateway-backend:latest
+                container_name: jzgateway-backend
+                ports:
+                  - "127.0.0.1:3000:3000"
+                environment:
+                  - PORT=3000
+                  - DATABASE_URL=postgresql://neondb_owner:npg_twcok0sDF8EK@ep-restless-resonance-apczv26v.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require
+                  - REDIS_URL=redis://redis:6379
+                  - JWT_SECRET=b3c0e5a6f2cdb93c8374d6c70b8a349c25f48ad29e37fc9a1e05dcd67bcf82eb
+                  - JWT_REFRESH_SECRET=57ad6b92f7d3cf25e1a90c48bdfc76390a3cf9387db21a56fbf38de5cfc9b68a
+                  - CREDENTIAL_ENCRYPTION_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+                  - MOOGOLD_BASE_URL=https://moogold.com/wp-json/v1/api
+                networks:
+                  - jzgateway-network
+                depends_on:
+                  - postgres
+                  - redis
+
+              frontend:
+                image: ${{ secrets.DOCKERHUB_USERNAME }}/jzgateway-frontend:latest
+                container_name: jzgateway-frontend
+                ports:
+                  - "80:80"
+                networks:
+                  - jzgateway-network
+                depends_on:
+                  - backend
+
+            volumes:
+              postgres_data:
+
+            networks:
+              jzgateway-network:
+                driver: bridge
+            EOF
+
+            # Pull latest pre-built images from Docker Hub
+            docker compose pull
+            
+            # Restart the docker stack
+            docker compose down
+            docker compose up -d

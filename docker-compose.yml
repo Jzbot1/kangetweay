@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: jzgateway-postgres
+    environment:
+      POSTGRES_DB: goldbridge
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - jzgateway-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: jzgateway-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - jzgateway-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: jzgateway-backend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgresql://user:password@postgres:5432/goldbridge
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=super_secret_jwt_key_12345
+      - JWT_REFRESH_SECRET=super_secret_jwt_refresh_key_12345
+      - CREDENTIAL_ENCRYPTION_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      - MOOGOLD_BASE_URL=https://moogold.com/wp-json/v1/api
+    networks:
+      - jzgateway-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: jzgateway-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - jzgateway-network
+
+volumes:
+  postgres_data:
+
+networks:
+  jzgateway-network:
+    driver: bridge
