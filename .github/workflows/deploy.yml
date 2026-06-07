@@ -80,12 +80,12 @@ jobs:
                   - "127.0.0.1:3000:3000"
                 environment:
                   - PORT=3000
-                  - DATABASE_URL=postgresql://neondb_owner:npg_twcok0sDF8EK@ep-restless-resonance-apczv26v.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require
+                  - DATABASE_URL=${{ secrets.DATABASE_URL }}
                   - REDIS_URL=redis://redis:6379
-                  - JWT_SECRET=b3c0e5a6f2cdb93c8374d6c70b8a349c25f48ad29e37fc9a1e05dcd67bcf82eb
-                  - JWT_REFRESH_SECRET=57ad6b92f7d3cf25e1a90c48bdfc76390a3cf9387db21a56fbf38de5cfc9b68a
-                  - CREDENTIAL_ENCRYPTION_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
-                  - MOOGOLD_BASE_URL=https://moogold.com/wp-json/v1/api
+                  - JWT_SECRET=${{ secrets.JWT_SECRET }}
+                  - JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+                  - CREDENTIAL_ENCRYPTION_KEY=${{ secrets.CREDENTIAL_ENCRYPTION_KEY }}
+                  - MOOGOLD_BASE_URL=${{ secrets.MOOGOLD_BASE_URL }}
                 networks:
                   - jzgateway-network
                 depends_on:
