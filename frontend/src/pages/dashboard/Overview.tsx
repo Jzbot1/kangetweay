@@ -71,13 +71,13 @@ export const Overview: React.FC = () => {
           <div className="flex items-center justify-between gap-2">
             <span className="text-[9px] text-gray-500 font-bold uppercase">UAT:</span>
             <span className="font-extrabold text-xs text-indigo-300">
-              {balances.uat.configured ? `$${formatNumber(balances.uat.balance)}` : 'Not Set'}
+              {balances.uat.configured ? `₹${formatNumber(balances.uat.balance)}` : 'Not Set'}
             </span>
           </div>
           <div className="flex items-center justify-between gap-2">
             <span className="text-[9px] text-gray-500 font-bold uppercase">PROD:</span>
             <span className="font-extrabold text-xs text-emerald-400">
-              {balances.production.configured ? `$${formatNumber(balances.production.balance)}` : 'Not Set'}
+              {balances.production.configured ? `₹${formatNumber(balances.production.balance)}` : 'Not Set'}
             </span>
           </div>
         </div>
@@ -267,7 +267,7 @@ export const Overview: React.FC = () => {
                       </td>
                       <td className="py-3.5 pr-4 text-right">
                         <span className="text-gray-300 font-semibold">
-                          {ord.amount ? `$${formatNumber(ord.amount)}` : '-'}
+                          {ord.amount ? `₹${formatNumber(ord.amount)}` : '-'}
                         </span>
                       </td>
                       <td className="py-3.5 text-right">

@@ -187,7 +187,7 @@ export const Orders: React.FC = () => {
                       <td className="p-4 text-gray-300 font-medium">{ord.product_id}</td>
                       <td className="p-4 text-gray-400 font-semibold">{ord.quantity}</td>
                       <td className="p-4 text-right text-gray-300 font-semibold">
-                        {ord.amount ? `$${formatNumber(ord.amount)}` : '-'}
+                        {ord.amount ? `₹${formatNumber(ord.amount)}` : '-'}
                       </td>
                       <td className="p-4 text-xs text-gray-500">{formatDate(ord.created_at)}</td>
                       <td className="p-4 text-right">
@@ -221,7 +221,7 @@ export const Orders: React.FC = () => {
                     <div className="flex flex-col gap-0.5 text-right">
                       <span className="text-gray-500">Amount</span>
                       <span className="text-gray-300 font-bold select-text">
-                        {ord.amount ? `$${formatNumber(ord.amount)}` : '-'}
+                        {ord.amount ? `₹${formatNumber(ord.amount)}` : '-'}
                       </span>
                     </div>
                   </div>

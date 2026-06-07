@@ -61,14 +61,14 @@ export const Topbar: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <span className="text-[9px] text-gray-500 uppercase font-bold">UAT:</span>
               <span className="font-extrabold text-indigo-300">
-                {balances.uat.configured ? `$${formatNumber(balances.uat.balance)}` : '-'}
+                {balances.uat.configured ? `₹${formatNumber(balances.uat.balance)}` : '-'}
               </span>
             </div>
             <div className="w-px h-3.5 bg-dark-border/80" />
             <div className="flex items-center gap-1.5">
               <span className="text-[9px] text-gray-500 uppercase font-bold">Prod:</span>
               <span className="font-extrabold text-emerald-400">
-                {balances.production.configured ? `$${formatNumber(balances.production.balance)}` : '-'}
+                {balances.production.configured ? `₹${formatNumber(balances.production.balance)}` : '-'}
               </span>
             </div>
           </div>
