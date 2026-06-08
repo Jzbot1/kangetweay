@@ -142,6 +142,41 @@ curl_setopt_array($curl, [
 $response = curl_exec($curl);
 curl_close($curl);
 echo $response;`
+    },
+    getBalance: {
+      curl: `curl -X GET https://jzpay.shop/v1/balance \\
+  -H "X-API-Key: your_api_key_here"`,
+      js: `const response = await fetch('https://jzpay.shop/v1/balance', {
+  headers: {
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+const data = await response.json();
+console.log(data);`,
+      python: `import requests
+
+url = "https://jzpay.shop/v1/balance"
+headers = {
+    "X-API-Key": "your_api_key_here"
+}
+
+response = requests.get(url, headers=headers)
+print(response.json())`,
+      php: `<?php
+
+$curl = curl_init();
+
+curl_setopt_array($curl, [
+  CURLOPT_URL => "https://jzpay.shop/v1/balance",
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_HTTPHEADER => [
+    "X-API-Key: your_api_key_here"
+  ],
+]);
+
+$response = curl_exec($curl);
+curl_close($curl);
+echo $response;`
     }
   };
 
@@ -201,6 +236,10 @@ echo $response;`
               <a href="#get-order" className="text-sm text-gray-300 hover:text-brand font-semibold flex items-center gap-2">
                 <Badge variant="info" className="px-1 py-0 text-[9px]">GET</Badge>
                 Get Order
+              </a>
+              <a href="#get-balance" className="text-sm text-gray-300 hover:text-brand font-semibold flex items-center gap-2">
+                <Badge variant="info" className="px-1 py-0 text-[9px]">GET</Badge>
+                Get Balance
               </a>
               <a href="#list-products" className="text-sm text-gray-300 hover:text-brand font-semibold flex items-center gap-2">
                 <Badge variant="info" className="px-1 py-0 text-[9px]">GET</Badge>
@@ -327,6 +366,20 @@ echo $response;`
               </div>
             </section>
 
+            {/* Get Balance Endpoint */}
+            <section id="get-balance" className="flex flex-col gap-6 border-t border-dark-border/30 pt-10">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <Badge variant="info">GET</Badge>
+                  <code className="text-sm font-mono font-bold text-gray-100">/v1/balance</code>
+                </div>
+                <h3 className="text-lg font-bold text-gray-200 mt-2">Get Account Balance</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">
+                  Queries your current partner wallet balance and currency configuration based on your API key's active environment (UAT or Production).
+                </p>
+              </div>
+            </section>
+
             {/* List Products Endpoint */}
             <section id="list-products" className="flex flex-col gap-6 border-t border-dark-border/30 pt-10">
               <div className="flex flex-col gap-2">
@@ -433,6 +486,23 @@ echo $response;`
                 </div>
                 <pre className="p-4 rounded-card bg-[#07070b] border border-dark-border/60 text-xs font-mono text-indigo-300 overflow-x-auto leading-relaxed select-text">
                   <code>{codeTemplates.getOrder[activeLang]}</code>
+                </pre>
+              </div>
+
+              {/* Example block 3 */}
+              <div className="flex flex-col gap-2 mt-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Get Balance Payload</span>
+                  <button
+                    onClick={() => handleCopyCode('balance', codeTemplates.getBalance[activeLang])}
+                    className="p-1 rounded hover:bg-dark-surface text-gray-500 hover:text-gray-300 flex items-center gap-1 text-[10px] font-semibold border border-transparent hover:border-dark-border transition-all"
+                  >
+                    {copiedId === 'balance' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedId === 'balance' ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+                <pre className="p-4 rounded-card bg-[#07070b] border border-dark-border/60 text-xs font-mono text-indigo-300 overflow-x-auto leading-relaxed select-text">
+                  <code>{codeTemplates.getBalance[activeLang]}</code>
                 </pre>
               </div>
             </div>

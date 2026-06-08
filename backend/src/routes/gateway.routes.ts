@@ -194,4 +194,30 @@ gatewayRoutes.get('/categories', async (c) => {
   return c.json({ categories }, 200);
 });
 
+gatewayRoutes.get('/balance', async (c) => {
+  const apiKey = c.get('apiKey');
+
+  const defaultCred = await findDefaultCredential(apiKey.userId, apiKey.environment);
+  if (!defaultCred) {
+    throw new BadRequestError(`No default MooGold credential configured for the ${apiKey.environment} environment.`);
+  }
+
+  const cred = await getCredentialForUse(defaultCred.id, apiKey.userId);
+  if (!cred) throw new Error('Failed to load credentials');
+
+  const balanceInfo = await moogoldService.getUserBalance(cred);
+
+  await usageService.recordRequest({
+    userId: apiKey.userId,
+    apiKeyId: apiKey.keyId,
+    path: '/v1/balance',
+    isSuccess: true
+  });
+
+  return c.json({
+    balance: balanceInfo.balance,
+    currency: balanceInfo.currency
+  }, 200);
+});
+
 export default gatewayRoutes;

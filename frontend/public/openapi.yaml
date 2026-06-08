@@ -176,6 +176,27 @@ paths:
         '200':
           description: OK
 
+  /v1/balance:
+    get:
+      summary: Get Account Balance
+      description: Fetches the current balance of your configured partner wallet (e.g. USDT balance, credit, etc.).
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balance:
+                    type: number
+                    example: 1250.75
+                  currency:
+                    type: string
+                    example: "USD"
+
 components:
   securitySchemes:
     ApiKeyAuth:

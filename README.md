@@ -11,6 +11,7 @@ Welcome to the **JZGateway** integration guide for PHP. This document provides s
 4. [Endpoint Examples](#4-endpoint-examples)
    - [Retrieve Product Categories](#retrieve-product-categories)
    - [Retrieve Product Catalog](#retrieve-product-catalog)
+   - [Retrieve Account Balance](#retrieve-account-balance)
    - [Place a Top-up Order](#place-a-top-up-order)
    - [Query Order Status](#query-order-status)
 5. [Handling Webhooks & Signature Verification](#5-handling-webhooks--signature-verification)
@@ -182,6 +183,13 @@ class JZGatewayClient {
     public function getOrderByPartner(string $partnerOrderId) {
         return $this->sendRequest('order/by-partner/' . urlencode($partnerOrderId), 'GET');
     }
+
+    /**
+     * Retrieve current partner wallet balance and currency configuration.
+     */
+    public function getBalance() {
+        return $this->sendRequest('balance', 'GET');
+    }
 }
 ?>
 ```
@@ -218,6 +226,16 @@ if ($response['success']) {
     print_r($response['data']['products']);
 } else {
     echo "Failed to retrieve products.";
+}
+```
+
+### Retrieve Account Balance
+```php
+$response = $gateway->getBalance();
+if ($response['success']) {
+    echo "Current Balance: " . $response['data']['balance'] . " " . $response['data']['currency'];
+} else {
+    echo "Failed to retrieve balance.";
 }
 ```
 
