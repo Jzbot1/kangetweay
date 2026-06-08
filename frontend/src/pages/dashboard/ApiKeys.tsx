@@ -461,7 +461,7 @@ export const ApiKeys: React.FC = () => {
           title="API Key Created Successfully"
           className="max-w-md"
         >
-          <div className="flex flex-col gap-5 text-left select-none">
+          <div className="flex flex-col gap-5 text-left">
             <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-card flex gap-2.5 items-start text-xs leading-relaxed">
               <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5" />
               <div>
@@ -472,10 +472,14 @@ export const ApiKeys: React.FC = () => {
             <div className="flex flex-col gap-2">
               <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Raw API Token</span>
               <div className="h-12 border border-dark-border rounded-input bg-dark-bg/60 px-4 flex items-center justify-between font-mono text-sm shadow-inner select-text">
-                <span className="text-indigo-300 font-semibold truncate max-w-[280px]">
-                  {createdKeyData?.rawKey}
-                </span>
-                <CopyButton value={createdKeyData?.rawKey || ''} toastMessage="API Key copied to clipboard" className="h-8 w-8" />
+                <input
+                  type="text"
+                  readOnly
+                  value={createdKeyData?.rawKey || ''}
+                  onClick={(e) => e.currentTarget.select()}
+                  className="bg-transparent border-none outline-none text-indigo-300 font-semibold w-full mr-2 select-all cursor-text font-mono text-sm"
+                />
+                <CopyButton value={createdKeyData?.rawKey || ''} toastMessage="API Key copied to clipboard" className="h-8 w-8 flex-shrink-0" />
               </div>
             </div>
 
