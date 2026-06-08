@@ -1,26 +1,26 @@
 openapi: 3.0.1
 info:
-  title: MooGold API
-  description: This is the documentation of MooGold API. It is a JSON based API that
-    enables you to connect to MooGold's digital gift card & direct top up inventory
+  title: JZPay API
+  description: This is the documentation of JZPay API. It is a JSON based API that
+    enables you to connect to JZPay's digital gift card & direct top up inventory
     to enrich your current distribution system.
-  termsOfService: https://moogold.com/terms-and-conditions/
+  termsOfService: https://jzpay.shop/terms-and-conditions/
   contact:
-    email: sales@moogold.com
+    email: sales@jzpay.shop
   x-logo:
-    url: https://cdn.moogold.com/2021/09/moogold.svg
-    altText: MooGold logo
-    href: https://moogold.com
+    url: https://cdn.jzpay.shop/2021/09/jzpay.svg
+    altText: JZPay logo
+    href: https://jzpay.shop
   version: '1.0'
 externalDocs:
-  description: Find out more about MooGold
-  url: https://moogold.com
+  description: Find out more about JZPay
+  url: https://jzpay.shop
 servers:
-- url: https://moogold.com/wp-json/v1/api
-- url: https://moogold.com/wp-json/v1/api
+- url: https://jzpay.shop/v1
+- url: https://jzpay.shop/v1
 tags:
 - name: Authentication
-  description: "Authentication is required before using the MooGold API. Every API\
+  description: "Authentication is required before using the JZPay API. Every API\
     \ method requires the same authentication process.\nIf you don't have a partner\
     \ ID or secret key, contact your account manager to obtain them. <br/><br/> Header:\n\
     1. Basic Auth:\n\n   Format in header: `Authorization: Basic <YOUR_BASIC_AUTH_HERE>`\n\
@@ -42,7 +42,7 @@ tags:
     \ time();\n   ```\n <br/>  \n Make sure to include all three headers (Basic Auth,\
     \ Auth Signature, and Timestamp) in your API requests for proper authentication.\n\
     \n Example JSON request with authentication headers:\n\n <br/>\n{<br/>\n    \"\
-    url\": \"https://moogold.com/wp-json/v1/api/order/YOUR_ENDPOINT\",<br/>\n    \"\
+    url\": \"https://jzpay.shop/v1/order/YOUR_ENDPOINT\",<br/>\n    \"\
     method\": \"POST\",<br/>\n    \"headers\": {<br/>\n    \"Authorization\": \"Basic\
     \ QUJDOkRFRg==\",<br/>\n    \"auth\": \"generated_auth_signature\",<br/>\n   \
     \ \"timestamp\": \"current_unix_timestamp\"<br/>\n },<br/>\n    \"data\": {<br/>\n\
@@ -67,17 +67,17 @@ tags:
     '
   externalDocs:
     description: ''
-    url: http://moogold.com
+    url: https://jzpay.shop
 - name: Product
   description: All product details and information.
   externalDocs:
     description: ''
-    url: http://moogold.com
+    url: https://jzpay.shop
 - name: User
   description: User
   externalDocs:
     description: ''
-    url: http://moogold.com
+    url: https://jzpay.shop
 paths:
   /order/create_order:
     post:
@@ -85,7 +85,7 @@ paths:
       - Order
       summary: Create Order
       requestBody:
-        description: Create an order in MooGold
+        description: Create an order in JZPay
         content:
           application/json:
             schema:
@@ -163,7 +163,7 @@ paths:
       - Order
       summary: Order Detail
       requestBody:
-        description: Retrieve an Order Detail in MooGold
+        description: Retrieve an Order Detail in JZPay
         content:
           application/json:
             schema:
@@ -454,7 +454,7 @@ paths:
       - Product
       summary: List Product
       requestBody:
-        description: List MooGold Products according to Product Category
+        description: List JZPay Products according to Product Category
         content:
           application/json:
             schema:
@@ -600,7 +600,7 @@ paths:
                     example: Account has been validated.
                   username:
                     type: string
-                    example: MooGold
+                    example: JZPay
         '419':
           description: Invalid Path
           content:
@@ -866,14 +866,14 @@ components:
         order_id:
           type: integer
           example: '10111111'
-          description: Your MooGold.com Order ID.
+          description: Your JZPay.com Order ID.
     order_detail_response_200:
       type: object
       properties:
         order_id:
           type: integer
           example: '10111111'
-          description: Your MooGold.com Order ID.
+          description: Your JZPay.com Order ID.
         date_created:
           type: string
           example: '2021-12-28 16:09:39'
@@ -932,7 +932,7 @@ components:
         category_id:
           type: integer
           example: 50
-          description: 'MooGold Category ID corresponding to the product category.
+          description: 'JZPay Category ID corresponding to the product category.
             The available categories are:
 
             - Direct-top up products: 50
@@ -1003,17 +1003,17 @@ components:
         product_id:
           type: integer
           example: 7847
-          description: MooGold Product ID, listed in LIST_PRODUCT API
+          description: JZPay Product ID, listed in LIST_PRODUCT API
     product_detail_response_200:
       type: object
       properties:
         Product_Name:
           type: string
           example: Garena Free Fire
-          description: MooGold Product Name
+          description: JZPay Product Name
         Image_URL:
           type: string
-          example: https://moogold.com/wp-content/uploads/2019/08/FreeFire-Garena.jpg
+          example: https://jzpay.shop/wp-content/uploads/2019/08/FreeFire-Garena.jpg
           description: Product Image
         Variation:
           type: array
@@ -1048,7 +1048,7 @@ components:
         product_id:
           type: integer
           example: 37007
-          description: MooGold Product ID
+          description: JZPay Product ID
     server_list_response_200:
       type: object
       properties:

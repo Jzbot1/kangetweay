@@ -28,7 +28,7 @@ export const Docs: React.FC = () => {
 
   const codeTemplates = {
     createOrder: {
-      curl: `curl -X POST https://api.jzgateway.com/v1/order/create \\
+      curl: `curl -X POST https://jzpay.shop/v1/order/create \\
   -H "X-API-Key: your_api_key_here" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -41,7 +41,7 @@ export const Docs: React.FC = () => {
       "Server": "3402"
     }
   }'`,
-      js: `const response = await fetch('https://api.jzgateway.com/v1/order/create', {
+      js: `const response = await fetch('https://jzpay.shop/v1/order/create', {
   method: 'POST',
   headers: {
     'X-API-Key': 'your_api_key_here',
@@ -62,7 +62,7 @@ const data = await response.json();
 console.log(data);`,
       python: `import requests
 
-url = "https://api.jzgateway.com/v1/order/create"
+url = "https://jzpay.shop/v1/order/create"
 headers = {
     "X-API-Key": "your_api_key_here",
     "Content-Type": "application/json"
@@ -85,7 +85,7 @@ print(response.json())`,
 $curl = curl_init();
 
 curl_setopt_array($curl, [
-  CURLOPT_URL => "https://api.jzgateway.com/v1/order/create",
+  CURLOPT_URL => "https://jzpay.shop/v1/order/create",
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_CUSTOMREQUEST => "POST",
   CURLOPT_POSTFIELDS => json_encode([
@@ -109,9 +109,9 @@ curl_close($curl);
 echo $response;`
     },
     getOrder: {
-      curl: `curl -X GET https://api.jzgateway.com/v1/order/c9281a94-82a1-432d-9b51-78facb21 \\
+      curl: `curl -X GET https://jzpay.shop/v1/order/c9281a94-82a1-432d-9b51-78facb21 \\
   -H "X-API-Key: your_api_key_here"`,
-      js: `const response = await fetch('https://api.jzgateway.com/v1/order/c9281a94-82a1-432d-9b51-78facb21', {
+      js: `const response = await fetch('https://jzpay.shop/v1/order/c9281a94-82a1-432d-9b51-78facb21', {
   headers: {
     'X-API-Key': 'your_api_key_here'
   }
@@ -120,7 +120,7 @@ const data = await response.json();
 console.log(data);`,
       python: `import requests
 
-url = "https://api.jzgateway.com/v1/order/c9281a94-82a1-432d-9b51-78facb21"
+url = "https://jzpay.shop/v1/order/c9281a94-82a1-432d-9b51-78facb21"
 headers = {
     "X-API-Key": "your_api_key_here"
 }
@@ -132,7 +132,7 @@ print(response.json())`,
 $curl = curl_init();
 
 curl_setopt_array($curl, [
-  CURLOPT_URL => "https://api.jzgateway.com/v1/order/c9281a94-82a1-432d-9b51-78facb21",
+  CURLOPT_URL => "https://jzpay.shop/v1/order/c9281a94-82a1-432d-9b51-78facb21",
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_HTTPHEADER => [
     "X-API-Key: your_api_key_here"
@@ -147,11 +147,11 @@ echo $response;`
 
   const errorCodes = [
     { code: "109", desc: "Invalid Signature headers sent." },
-    { code: "111", desc: "Insufficient Balance in MooGold wallet." },
+    { code: "111", desc: "Insufficient Balance in JZPay wallet." },
     { code: "114", desc: "Target Product is currently Out of Stock." },
-    { code: "403", desc: "Invalid MooGold API credentials or unauthorized account scope." },
+    { code: "403", desc: "Invalid JZPay API credentials or unauthorized account scope." },
     { code: "420", desc: "Duplicate partner order ID provided. Order has already been submitted." },
-    { code: "433", desc: "IP address not allowed by MooGold firewall settings." },
+    { code: "433", desc: "IP address not allowed by JZPay firewall settings." },
     { code: "RATE_LIMIT_EXCEEDED", desc: "Rate limit threshold breached. Max 100 calls per minute." }
   ];
 
@@ -163,7 +163,7 @@ echo $response;`
           <Link to={ROUTES.LANDING} className="p-1 rounded bg-dark-surface hover:bg-dark-bg/60 border border-dark-border text-gray-400 hover:text-gray-200 transition-colors">
             <ArrowLeft className="w-4.5 h-4.5" />
           </Link>
-          <span className="font-extrabold text-sm text-gray-200 tracking-wider">jzgateway API Reference</span>
+          <span className="font-extrabold text-sm text-gray-200 tracking-wider">jzpay API Reference</span>
         </div>
 
         <div className="flex items-center gap-4">
@@ -230,7 +230,7 @@ echo $response;`
               </p>
               <ol className="flex flex-col gap-3 text-sm text-gray-400 pl-4 list-decimal mt-2">
                 <li>Register a platform account credentials on the landing dashboard console.</li>
-                <li>Add valid MooGold Partner ID and Secret Keys in the Credentials panel.</li>
+                <li>Add valid JZPay Partner ID and Secret Keys in the Credentials panel.</li>
                 <li>Generate a gateway API Key to retrieve access for UAT/Production testing.</li>
                 <li>Send HTTP order placement payloads to the gateway endpoint using your key.</li>
               </ol>
@@ -240,7 +240,7 @@ echo $response;`
             <section id="auth" className="flex flex-col gap-4 border-t border-dark-border/30 pt-10">
               <h2 className="text-xl font-bold text-gray-100">Authentication Header</h2>
               <p className="text-sm text-gray-400 leading-relaxed">
-                All proxy requests sent to the jzgateway API require authorization. You must supply your token key inside the <code className="bg-dark-bg/60 border border-dark-border px-1.5 py-0.5 rounded font-mono text-xs text-indigo-300">X-API-Key</code> request header:
+                All proxy requests sent to the jzpay API require authorization. You must supply your token key inside the <code className="bg-dark-bg/60 border border-dark-border px-1.5 py-0.5 rounded font-mono text-xs text-indigo-300">X-API-Key</code> request header:
               </p>
               <pre className="p-4 bg-dark-bg/60 border border-dark-border rounded-card font-mono text-xs text-gray-400 leading-relaxed">
                 <code>X-API-Key: mg_live_your_platform_token_key</code>
@@ -256,7 +256,7 @@ echo $response;`
                 </div>
                 <h3 className="text-lg font-bold text-gray-200 mt-2">Create top-up Order</h3>
                 <p className="text-sm text-gray-400 leading-relaxed">
-                  Triggers an order process in the gateway queue. Orders are processed asynchronously in the background. The gateway returns a `jobId` and a pending `orderId`. Once MooGold fulfills the request, a webhook is fired to notify your systems.
+                  Triggers an order process in the gateway queue. Orders are processed asynchronously in the background. The gateway returns a `jobId` and a pending `orderId`. Once JZPay fulfills the request, a webhook is fired to notify your systems.
                 </p>
               </div>
 
@@ -284,7 +284,7 @@ echo $response;`
                         <td className="p-3 font-mono font-bold text-indigo-300">product_id</td>
                         <td className="p-3 font-mono text-gray-400">string</td>
                         <td className="p-3 text-brand font-semibold">Required</td>
-                        <td className="p-3 text-gray-400">MooGold Variation ID of the product variation to purchase.</td>
+                        <td className="p-3 text-gray-400">JZPay Variation ID of the product variation to purchase.</td>
                       </tr>
                       <tr>
                         <td className="p-3 font-mono font-bold text-indigo-300">quantity</td>
@@ -354,7 +354,7 @@ echo $response;`
             <section id="error-codes" className="flex flex-col gap-4 border-t border-dark-border/30 pt-10">
               <h2 className="text-xl font-bold text-gray-100">Error Status Mappings</h2>
               <p className="text-sm text-gray-400 leading-relaxed">
-                MooGold errors are converted and returned by JZGateway with structured JSON details. Below are the common error codes mapping:
+                JZPay errors are converted and returned by JZGateway with structured JSON details. Below are the common error codes mapping:
               </p>
               <div className="overflow-x-auto border border-dark-border rounded-card mt-2">
                 <table className="w-full text-left text-xs border-collapse">

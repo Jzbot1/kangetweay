@@ -15,21 +15,21 @@ import { motion } from 'framer-motion';
 import { cn } from '../lib/utils.js';
 
 export const Landing: React.FC = () => {
-  const [terminalText, setTerminalText] = useState('curl -X POST https://api.jzgateway.com/v1/order/create \\');
+  const [terminalText, setTerminalText] = useState('curl -X POST https://jzpay.shop/v1/order/create \\');
   const [terminalStep, setTerminalStep] = useState(0);
 
   // Simple typing simulation in the terminal mockup
   useEffect(() => {
     const timer = setTimeout(() => {
       if (terminalStep === 0) {
-        setTerminalText('curl -X POST https://api.jzgateway.com/v1/order/create \\\n  -H "X-API-Key: mg_live_6872fa13" \\\n  -d \'{"product_id": "215570", "quantity": 1}\'');
+        setTerminalText('curl -X POST https://jzpay.shop/v1/order/create \\\n  -H "X-API-Key: mg_live_6872fa13" \\\n  -d \'{"product_id": "215570", "quantity": 1}\'');
         setTerminalStep(1);
       } else if (terminalStep === 1) {
         setTerminalStep(2);
       } else {
         // Reset loop
         setTimeout(() => {
-          setTerminalText('curl -X POST https://api.jzgateway.com/v1/order/create \\');
+          setTerminalText('curl -X POST https://jzpay.shop/v1/order/create \\');
           setTerminalStep(0);
         }, 8000);
       }
@@ -57,7 +57,7 @@ export const Landing: React.FC = () => {
   ];
 
   const steps = [
-    { title: "1. Create Account", desc: "Sign up on jzgateway in just 10 seconds." },
+    { title: "1. Create Account", desc: "Sign up on jzpay in just 10 seconds." },
     { title: "2. Add API Provider Key", desc: "Store your API Provider Partner ID and Secret Key in your vault." },
     { title: "3. Copy Gateway Key", desc: "Generate a platform API Key to authenticate requests." },
     { title: "4. Integrate & Track", desc: "Send orders through our proxy and track webhooks." }
@@ -79,7 +79,7 @@ export const Landing: React.FC = () => {
               <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
             </svg>
           </div>
-          <span className="font-extrabold text-xl tracking-wider text-gradient">jzgateway</span>
+          <span className="font-extrabold text-xl tracking-wider text-gradient">jzpay</span>
         </div>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
@@ -284,10 +284,10 @@ export const Landing: React.FC = () => {
                 <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
               </svg>
             </div>
-            <span className="font-bold text-sm text-gray-400">jzgateway</span>
+            <span className="font-bold text-sm text-gray-400">jzpay</span>
           </div>
           <p className="text-gray-500">
-            &copy; {new Date().getFullYear()} jzgateway platform. All rights reserved. Built for API distribution.
+            &copy; {new Date().getFullYear()} jzpay platform. All rights reserved. Built for API distribution.
           </p>
         </div>
       </footer>

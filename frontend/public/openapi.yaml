@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
-  title: jzgateway API Reference
+  title: jzpay API Reference
   description: |
-    Welcome to the jzgateway API specification. 
+    Welcome to the jzpay API specification. 
     This gateway acts as a high-performance, secure proxy bridging your client systems directly to game networks and top-up catalogs.
     
     All requests require authentication using your platform generated API Key passed via the `X-API-Key` request header.
@@ -10,7 +10,7 @@ info:
 servers:
   - url: http://localhost:3000
     description: Local Dev Server
-  - url: https://api.jzgateway.com
+  - url: https://jzpay.shop
     description: Production Gateway
 paths:
   /v1/order/create:
