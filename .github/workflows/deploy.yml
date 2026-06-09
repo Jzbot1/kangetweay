@@ -44,74 +44,85 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e
             mkdir -p ~/app
             cd ~/app
-            
-            # Write out the production docker-compose.yml on the server
-            cat << 'EOF' > docker-compose.yml
-            version: '3.8'
-            services:
-              postgres:
-                image: postgres:16
-                container_name: jzgateway-postgres
-                environment:
-                  POSTGRES_DB: goldbridge
-                  POSTGRES_USER: user
-                  POSTGRES_PASSWORD: password
-                ports:
-                  - "127.0.0.1:5432:5432"
-                volumes:
-                  - postgres_data:/var/lib/postgresql/data
-                networks:
-                  - jzgateway-network
 
-              redis:
-                image: redis:7-alpine
-                container_name: jzgateway-redis
-                ports:
-                  - "127.0.0.1:6379:6379"
-                networks:
-                  - jzgateway-network
+            # -------------------------------------------------------------------
+            # Write docker-compose.yml using python3 to avoid heredoc EOF issues
+            # -------------------------------------------------------------------
+            python3 - << 'PYEOF'
+import os
+content = """services:
+  postgres:
+    image: postgres:16
+    container_name: jzgateway-postgres
+    environment:
+      POSTGRES_DB: goldbridge
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - jzgateway-network
 
-              backend:
-                image: ${{ secrets.DOCKERHUB_USERNAME }}/jzgateway-backend:latest
-                container_name: jzgateway-backend
-                ports:
-                  - "127.0.0.1:3000:3000"
-                environment:
-                  - PORT=3000
-                  - DATABASE_URL=${{ secrets.DATABASE_URL }}
-                  - REDIS_URL=redis://redis:6379
-                  - JWT_SECRET=${{ secrets.JWT_SECRET }}
-                  - JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
-                  - CREDENTIAL_ENCRYPTION_KEY=${{ secrets.CREDENTIAL_ENCRYPTION_KEY }}
-                  - MOOGOLD_BASE_URL=${{ secrets.MOOGOLD_BASE_URL }}
-                networks:
-                  - jzgateway-network
-                depends_on:
-                  - postgres
-                  - redis
+  redis:
+    image: redis:7-alpine
+    container_name: jzgateway-redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    networks:
+      - jzgateway-network
 
-              frontend:
-                image: ${{ secrets.DOCKERHUB_USERNAME }}/jzgateway-frontend:latest
-                container_name: jzgateway-frontend
-                ports:
-                  - "8080:80"
-                networks:
-                  - jzgateway-network
-                depends_on:
-                  - backend
+  backend:
+    image: """ + os.environ['DOCKERHUB_USERNAME'] + """/jzgateway-backend:latest
+    container_name: jzgateway-backend
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=""" + os.environ['DATABASE_URL'] + """
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=""" + os.environ['JWT_SECRET'] + """
+      - JWT_REFRESH_SECRET=""" + os.environ['JWT_REFRESH_SECRET'] + """
+      - CREDENTIAL_ENCRYPTION_KEY=""" + os.environ['CREDENTIAL_ENCRYPTION_KEY'] + """
+      - MOOGOLD_BASE_URL=""" + os.environ['MOOGOLD_BASE_URL'] + """
+    networks:
+      - jzgateway-network
+    depends_on:
+      - postgres
+      - redis
 
-            volumes:
-              postgres_data:
+  frontend:
+    image: """ + os.environ['DOCKERHUB_USERNAME'] + """/jzgateway-frontend:latest
+    container_name: jzgateway-frontend
+    ports:
+      - "8080:80"
+    networks:
+      - jzgateway-network
+    depends_on:
+      - backend
 
-            networks:
-              jzgateway-network:
-                driver: bridge
-            EOF
+volumes:
+  postgres_data:
 
-            # Write the Nginx site config inline
-            sudo mkdir -p /etc/nginx/sites-available
+networks:
+  jzgateway-network:
+    driver: bridge
+"""
+with open(os.path.expanduser("~/app/docker-compose.yml"), "w") as f:
+    f.write(content)
+print("docker-compose.yml written successfully")
+PYEOF
+
+            # -------------------------------------------------------------------
+            # Write Nginx config (heredoc at column-0 — works correctly here
+            # because appleboy/ssh-action base64-decodes and pipes to bash,
+            # and the NGINXEOF terminator IS at column 0 in the raw script)
+            # -------------------------------------------------------------------
+            sudo mkdir -p /etc/nginx/sites-available /var/www/certbot
             sudo tee /etc/nginx/sites-available/jzpay.shop > /dev/null << 'NGINXEOF'
 server {
     listen 80;
@@ -168,14 +179,18 @@ server {
 }
 NGINXEOF
 
-            # Enable the site and disable the default
             sudo ln -sf /etc/nginx/sites-available/jzpay.shop /etc/nginx/sites-enabled/jzpay.shop
             sudo rm -f /etc/nginx/sites-enabled/default
             sudo nginx -t && sudo systemctl reload nginx
 
-            # Pull latest pre-built images from Docker Hub
+            # Pull latest images and restart the stack
             docker compose pull
-
-            # Restart the docker stack
             docker compose down
             docker compose up -d
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          CREDENTIAL_ENCRYPTION_KEY: ${{ secrets.CREDENTIAL_ENCRYPTION_KEY }}
+          MOOGOLD_BASE_URL: ${{ secrets.MOOGOLD_BASE_URL }}
