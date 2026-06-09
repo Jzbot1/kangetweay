@@ -36,11 +36,11 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/jzgateway-frontend:latest
 
-      # 3. Generate production docker-compose.yml on the runner
-      #    (heredocs work perfectly here — no SSH indentation issues)
+      # 3. Generate production docker-compose.yml inside the workspace
+      #    (run: block has full shell support; heredoc EOF at col-0 after YAML strip)
       - name: Generate production docker-compose.yml
         run: |
-          cat > /tmp/docker-compose.prod.yml << EOF
+          cat > docker-compose.prod.yml << EOF
           services:
             postgres:
               image: postgres:16
@@ -101,11 +101,11 @@ jobs:
               driver: bridge
           EOF
 
-          # Strip the leading indentation added by YAML block scalar
-          sed -i 's/^          //' /tmp/docker-compose.prod.yml
+          # YAML block scalar adds 10-space indentation to every heredoc line — strip it
+          sed -i 's/^          //' docker-compose.prod.yml
 
           echo "=== Generated docker-compose.prod.yml ==="
-          cat /tmp/docker-compose.prod.yml
+          cat docker-compose.prod.yml
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -114,24 +114,15 @@ jobs:
           CREDENTIAL_ENCRYPTION_KEY: ${{ secrets.CREDENTIAL_ENCRYPTION_KEY }}
           MOOGOLD_BASE_URL: ${{ secrets.MOOGOLD_BASE_URL }}
 
-      # 4. Copy files to the server via SCP
+      # 4. Copy both files to the server in one SCP step (no strip_components needed)
       - name: Copy configs to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "nginx/jzpay.shop.conf"
+          source: "docker-compose.prod.yml,nginx/jzpay.shop.conf"
           target: "~/app/"
-      - name: Copy docker-compose to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "/tmp/docker-compose.prod.yml"
-          target: "~/app/"
-          strip_components: 2
 
       # 5. SSH — run docker and nginx commands only (no file writing over SSH)
       - name: Deploy to EC2 via SSH
