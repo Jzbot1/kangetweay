@@ -1,5 +1,5 @@
 # Build phase
-FROM node:20-alpine as build
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ COPY . .
 ENV VITE_API_BASE_URL=/api
 ENV VITE_GATEWAY_BASE_URL=/v1
 
-RUN npm run build
+RUN npx vite build
 
 # Nginx runner phase
 FROM nginx:alpine
