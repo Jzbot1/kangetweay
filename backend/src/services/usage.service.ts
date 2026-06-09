@@ -126,3 +126,39 @@ export async function getUsageByEndpoint(userId: string, period: '7d' | '30d' | 
   // Sort descending
   return endpoints.sort((a, b) => b.count - a.count);
 }
+
+/**
+ * Returns the current month's request usage vs the user's admin-set limit.
+ * Period is always the current calendar month (1st to today).
+ */
+export async function getUserQuota(userId: string): Promise<{
+  used: number;
+  limit: number | null;
+  period: 'monthly';
+  resetDate: string;
+}> {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+    .toISOString()
+    .split('T')[0];
+
+  // Sum all requests this calendar month from usage_daily
+  const usageSql = `
+    SELECT COALESCE(SUM(total_requests), 0)::int AS used
+    FROM usage_daily
+    WHERE user_id = $1 AND date >= $2;
+  `;
+  const usageResult = await query(usageSql, [userId, monthStart]);
+  const used = usageResult.rows[0]?.used ?? 0;
+
+  // Fetch the user's monthly_limit
+  const userSql = `SELECT monthly_limit FROM users WHERE id = $1;`;
+  const userResult = await query(userSql, [userId]);
+  const limit: number | null = userResult.rows[0]?.monthly_limit ?? null;
+
+  // First day of next month as reset date
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const resetDate = nextMonth.toISOString().split('T')[0];
+
+  return { used, limit, period: 'monthly', resetDate };
+}

@@ -20,7 +20,8 @@ export const queryKeys = {
   usage: {
     stats: (period: string) => ['usage', 'stats', period] as const,
     chart: (period: string) => ['usage', 'chart', period] as const,
-    endpoints: (period: string) => ['usage', 'endpoints', period] as const
+    endpoints: (period: string) => ['usage', 'endpoints', period] as const,
+    quota: ['usage', 'quota'] as const
   },
   admin: {
     users: ['admin', 'users'] as const

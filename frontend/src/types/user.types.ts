@@ -6,6 +6,7 @@ export interface User {
   is_active: boolean;
   is_approved: boolean;
   role: string;
+  monthly_limit?: number | null;
   created_at: string;
   updated_at?: string;
 }

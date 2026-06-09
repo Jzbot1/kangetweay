@@ -49,6 +49,27 @@ export function useAdminUsers() {
     }
   });
 
+  // 4. Update Monthly Limit Mutation
+  const updateLimitMutation = useMutation({
+    mutationFn: async ({ userId, limit }: { userId: string; limit: number | null }) => {
+      const res = await api.patch<{ user: User }>(`/admin/users/${userId}/limit`, {
+        monthly_limit: limit
+      });
+      return res.data.user;
+    },
+    onSuccess: (updatedUser) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users });
+      const limitText = updatedUser.monthly_limit != null
+        ? `set to ${updatedUser.monthly_limit.toLocaleString()} req/month`
+        : 'removed (unlimited)';
+      addToast(`Limit for ${updatedUser.name} ${limitText}`, 'success');
+    },
+    onError: (error: any) => {
+      const msg = error.response?.data?.error?.message || 'Failed to update limit';
+      addToast(msg, 'error');
+    }
+  });
+
   // Compute statistics
   const users = listQuery.data || [];
   const stats = {
@@ -66,7 +87,12 @@ export function useAdminUsers() {
     approveUser: approveMutation.mutateAsync,
     isApproving: approveMutation.isPending,
     disapproveUser: disapproveMutation.mutateAsync,
-    isDisapproving: disapproveMutation.isPending
+    isDisapproving: disapproveMutation.isPending,
+    updateUserLimit: updateLimitMutation.mutateAsync,
+    isUpdatingLimit: updateLimitMutation.isPending,
+    updatingLimitUserId: updateLimitMutation.isPending
+      ? (updateLimitMutation.variables as any)?.userId
+      : null,
   };
 }
 export default useAdminUsers;

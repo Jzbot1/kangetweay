@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   is_active BOOLEAN DEFAULT true,
   is_approved BOOLEAN DEFAULT false,
   role VARCHAR(20) DEFAULT 'user',
+  monthly_limit INTEGER DEFAULT NULL,      -- NULL = unlimited; set by admin
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

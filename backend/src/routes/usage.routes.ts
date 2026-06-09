@@ -30,4 +30,11 @@ usageRoutes.get('/by-endpoint', async (c) => {
   return c.json({ endpoints }, 200);
 });
 
+// GET /api/usage/quota - Current month usage vs admin-set monthly limit
+usageRoutes.get('/quota', async (c) => {
+  const user = c.get('user');
+  const quota = await usageService.getUserQuota(user.userId);
+  return c.json(quota, 200);
+});
+
 export default usageRoutes;

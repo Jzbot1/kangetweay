@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { authMiddleware, AuthContext } from '../middleware/auth.middleware.js';
-import { findUserById, findAllUsers, updateUserApproval } from '../db/queries/users.queries.js';
+import { findUserById, findAllUsers, updateUserApproval, updateUserLimit } from '../db/queries/users.queries.js';
 import { ForbiddenError, NotFoundError } from '../lib/errors.js';
 
 const adminRoutes = new Hono<AuthContext>();
@@ -47,6 +47,25 @@ adminRoutes.post('/users/:id/disapprove', async (c) => {
   }
 
   const user = await updateUserApproval(id, false);
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+  const { password_hash, ...sanitized } = user;
+  return c.json({ user: sanitized }, 200);
+});
+
+// PATCH /api/admin/users/:id/limit - Set or clear a user's monthly request limit
+adminRoutes.patch('/users/:id/limit', async (c) => {
+  const id = c.req.param('id');
+  const body = await c.req.json<{ monthly_limit: number | null }>();
+
+  // Validate: must be a positive integer or null
+  const limit = body.monthly_limit;
+  if (limit !== null && (typeof limit !== 'number' || !Number.isInteger(limit) || limit <= 0)) {
+    return c.json({ error: { message: 'monthly_limit must be a positive integer or null.' } }, 400);
+  }
+
+  const user = await updateUserLimit(id, limit);
   if (!user) {
     throw new NotFoundError('User not found');
   }

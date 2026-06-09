@@ -9,6 +9,7 @@ export interface UserRow {
   is_active: boolean;
   is_approved: boolean;
   role: string;
+  monthly_limit: number | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -49,5 +50,20 @@ export async function updateUserApproval(id: string, isApproved: boolean): Promi
     RETURNING *;
   `;
   const result = await query(sql, [id, isApproved]);
+  return result.rows[0] || null;
+}
+
+/**
+ * Set or clear a per-user monthly request limit.
+ * Pass null to remove the limit (unlimited).
+ */
+export async function updateUserLimit(id: string, monthlyLimit: number | null): Promise<UserRow | null> {
+  const sql = `
+    UPDATE users 
+    SET monthly_limit = $2, updated_at = NOW() 
+    WHERE id = $1 
+    RETURNING *;
+  `;
+  const result = await query(sql, [id, monthlyLimit]);
   return result.rows[0] || null;
 }
