@@ -49,11 +49,12 @@ jobs:
             cd ~/app
 
             # -------------------------------------------------------------------
-            # Write docker-compose.yml using python3 to avoid heredoc EOF issues
+            # Write docker-compose.yml via python3 -c (no heredoc, no EOF issues)
             # -------------------------------------------------------------------
-            python3 - << 'PYEOF'
-import os
-content = """services:
+            python3 -c "
+import os, textwrap
+content = textwrap.dedent('''
+services:
   postgres:
     image: postgres:16
     container_name: jzgateway-postgres
@@ -62,7 +63,7 @@ content = """services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:
-      - "127.0.0.1:5432:5432"
+      - \"127.0.0.1:5432:5432\"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -72,23 +73,23 @@ content = """services:
     image: redis:7-alpine
     container_name: jzgateway-redis
     ports:
-      - "127.0.0.1:6379:6379"
+      - \"127.0.0.1:6379:6379\"
     networks:
       - jzgateway-network
 
   backend:
-    image: """ + os.environ['DOCKERHUB_USERNAME'] + """/jzgateway-backend:latest
+    image: {dh}/jzgateway-backend:latest
     container_name: jzgateway-backend
     ports:
-      - "127.0.0.1:3000:3000"
+      - \"127.0.0.1:3000:3000\"
     environment:
       - PORT=3000
-      - DATABASE_URL=""" + os.environ['DATABASE_URL'] + """
+      - DATABASE_URL={db}
       - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=""" + os.environ['JWT_SECRET'] + """
-      - JWT_REFRESH_SECRET=""" + os.environ['JWT_REFRESH_SECRET'] + """
-      - CREDENTIAL_ENCRYPTION_KEY=""" + os.environ['CREDENTIAL_ENCRYPTION_KEY'] + """
-      - MOOGOLD_BASE_URL=""" + os.environ['MOOGOLD_BASE_URL'] + """
+      - JWT_SECRET={jwt}
+      - JWT_REFRESH_SECRET={jwt_r}
+      - CREDENTIAL_ENCRYPTION_KEY={enc}
+      - MOOGOLD_BASE_URL={mg}
     networks:
       - jzgateway-network
     depends_on:
@@ -96,10 +97,10 @@ content = """services:
       - redis
 
   frontend:
-    image: """ + os.environ['DOCKERHUB_USERNAME'] + """/jzgateway-frontend:latest
+    image: {dh}/jzgateway-frontend:latest
     container_name: jzgateway-frontend
     ports:
-      - "8080:80"
+      - \"8080:80\"
     networks:
       - jzgateway-network
     depends_on:
@@ -111,11 +112,18 @@ volumes:
 networks:
   jzgateway-network:
     driver: bridge
-"""
-with open(os.path.expanduser("~/app/docker-compose.yml"), "w") as f:
+''').lstrip().format(
+    dh=os.environ['DOCKERHUB_USERNAME'],
+    db=os.environ['DATABASE_URL'],
+    jwt=os.environ['JWT_SECRET'],
+    jwt_r=os.environ['JWT_REFRESH_SECRET'],
+    enc=os.environ['CREDENTIAL_ENCRYPTION_KEY'],
+    mg=os.environ['MOOGOLD_BASE_URL'],
+)
+with open(os.path.expanduser('~/app/docker-compose.yml'), 'w') as f:
     f.write(content)
-print("docker-compose.yml written successfully")
-PYEOF
+print('docker-compose.yml written OK')
+"
 
             # -------------------------------------------------------------------
             # Write Nginx config (heredoc at column-0 — works correctly here
