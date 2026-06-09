@@ -8,10 +8,10 @@ info:
     All requests require authentication using your platform generated API Key passed via the `X-API-Key` request header.
   version: 1.0.0
 servers:
-  - url: http://localhost:3000
-    description: Local Dev Server
   - url: https://jzpay.shop
     description: Production Gateway
+  - url: http://localhost:3000
+    description: Local Dev Server
 paths:
   /v1/order/create:
     post:
