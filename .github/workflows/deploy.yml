@@ -36,13 +36,16 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/jzgateway-frontend:latest
 
-      # 3. Generate production docker-compose.yml from template using envsubst
-      #    Template is committed in the repo — no heredocs, no path issues
-      - name: Generate production docker-compose.yml
+      # 3. Generate compose file on runner and base64-encode it
+      #    envsubst replaces ${VAR} placeholders; base64 lets us pass the
+      #    file content as an env var to the SSH step — no SCP needed.
+      - name: Generate and encode docker-compose.yml
+        id: compose
         run: |
           envsubst < docker-compose.prod.yml.template > docker-compose.prod.yml
-          echo "=== Generated docker-compose.prod.yml ==="
+          echo "=== Generated compose file ==="
           cat docker-compose.prod.yml
+          echo "compose_b64=$(base64 -w0 docker-compose.prod.yml)" >> "$GITHUB_OUTPUT"
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -51,29 +54,37 @@ jobs:
           CREDENTIAL_ENCRYPTION_KEY: ${{ secrets.CREDENTIAL_ENCRYPTION_KEY }}
           MOOGOLD_BASE_URL: ${{ secrets.MOOGOLD_BASE_URL }}
 
-      # 4. SCP generated compose file + nginx config to the server
-      - name: Copy configs to EC2
+      # 4. SCP only the nginx config (static file, no secrets)
+      - name: Copy nginx config to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "docker-compose.prod.yml,nginx/jzpay.shop.conf"
+          source: "nginx/jzpay.shop.conf"
           target: "~/app/"
 
-      # 5. SSH — run docker and nginx commands only (no file writing over SSH)
+      # 5. SSH: decode compose file, setup nginx, deploy
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          envs: COMPOSE_B64
           script: |
             set -e
+            mkdir -p ~/app
             cd ~/app
 
-            # Install the generated compose file
-            mv ~/app/docker-compose.prod.yml ~/app/docker-compose.yml
+            # Decode and write docker-compose.yml directly — no SCP path issues
+            echo "$COMPOSE_B64" | base64 -d > ~/app/docker-compose.yml
+
+            echo "=== docker-compose.yml on server ==="
+            cat ~/app/docker-compose.yml
+
+            echo "=== Verifying frontend port ==="
+            grep "8080:80" ~/app/docker-compose.yml && echo "Port OK: 8080:80" || { echo "ERROR: wrong port!"; exit 1; }
 
             # Install and enable Nginx site config
             sudo mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled /var/www/certbot
@@ -82,14 +93,16 @@ jobs:
             sudo rm -f /etc/nginx/sites-enabled/default
             sudo nginx -t && sudo systemctl reload nginx
 
-            echo "=== docker-compose.yml on server ==="
-            cat ~/app/docker-compose.yml
+            # Force-remove the frontend container so port 8080 is free
+            docker rm -f jzgateway-frontend 2>/dev/null || true
 
-            # Pull and restart
+            # Pull and restart the full stack
             docker compose pull
             docker compose down
             docker compose up -d
 
             echo "=== Running containers ==="
             docker ps --format "table {{.Names}}\t{{.Ports}}"
+        env:
+          COMPOSE_B64: ${{ steps.compose.outputs.compose_b64 }}
 
