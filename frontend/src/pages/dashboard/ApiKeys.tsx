@@ -79,7 +79,7 @@ export const ApiKeys: React.FC = () => {
         }
       }
 
-      const gatewayBaseUrl = (import.meta as any).env?.VITE_GATEWAY_URL || 'http://localhost:3000/v1';
+      const gatewayBaseUrl = (import.meta as any).env?.VITE_GATEWAY_BASE_URL || '/v1';
       
       const config = {
         headers: {
@@ -321,7 +321,7 @@ export const ApiKeys: React.FC = () => {
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider select-none">Target Gateway URL</label>
                 <div className="h-10 px-3 bg-[#0a0a0f] border border-dark-border/60 text-gray-500 font-mono text-xs rounded-input flex items-center select-all select-none">
-                  http://localhost:3000/v1{playgroundEndpoint}
+                  {gatewayBaseUrl}{playgroundEndpoint}
                   {playgroundEndpoint === '/products' && '?category_id=50'}
                 </div>
               </div>
