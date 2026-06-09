@@ -38,6 +38,9 @@ export const ApiKeys: React.FC = () => {
   const [playgroundStatus, setPlaygroundStatus] = useState<number | null>(null);
   const [playgroundTime, setPlaygroundTime] = useState<number | null>(null);
 
+  // Gateway base URL — reads VITE_GATEWAY_BASE_URL (/v1 in production Dockerfile)
+  const gatewayBaseUrl = (import.meta as any).env?.VITE_GATEWAY_BASE_URL || '/v1';
+
   const handleEndpointChange = (endpoint: string) => {
     setPlaygroundEndpoint(endpoint);
     setPlaygroundResponse(null);
@@ -79,7 +82,7 @@ export const ApiKeys: React.FC = () => {
         }
       }
 
-      const gatewayBaseUrl = (import.meta as any).env?.VITE_GATEWAY_BASE_URL || '/v1';
+
       
       const config = {
         headers: {
