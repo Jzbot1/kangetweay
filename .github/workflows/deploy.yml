@@ -36,74 +36,11 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/jzgateway-frontend:latest
 
-      # 3. Generate production docker-compose.yml inside the workspace
-      #    (run: block has full shell support; heredoc EOF at col-0 after YAML strip)
+      # 3. Generate production docker-compose.yml from template using envsubst
+      #    Template is committed in the repo — no heredocs, no path issues
       - name: Generate production docker-compose.yml
         run: |
-          cat > docker-compose.prod.yml << EOF
-          services:
-            postgres:
-              image: postgres:16
-              container_name: jzgateway-postgres
-              environment:
-                POSTGRES_DB: goldbridge
-                POSTGRES_USER: user
-                POSTGRES_PASSWORD: password
-              ports:
-                - "127.0.0.1:5432:5432"
-              volumes:
-                - postgres_data:/var/lib/postgresql/data
-              networks:
-                - jzgateway-network
-
-            redis:
-              image: redis:7-alpine
-              container_name: jzgateway-redis
-              ports:
-                - "127.0.0.1:6379:6379"
-              networks:
-                - jzgateway-network
-
-            backend:
-              image: ${DOCKERHUB_USERNAME}/jzgateway-backend:latest
-              container_name: jzgateway-backend
-              ports:
-                - "127.0.0.1:3000:3000"
-              environment:
-                - PORT=3000
-                - DATABASE_URL=${DATABASE_URL}
-                - REDIS_URL=redis://redis:6379
-                - JWT_SECRET=${JWT_SECRET}
-                - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
-                - CREDENTIAL_ENCRYPTION_KEY=${CREDENTIAL_ENCRYPTION_KEY}
-                - MOOGOLD_BASE_URL=${MOOGOLD_BASE_URL}
-              networks:
-                - jzgateway-network
-              depends_on:
-                - postgres
-                - redis
-
-            frontend:
-              image: ${DOCKERHUB_USERNAME}/jzgateway-frontend:latest
-              container_name: jzgateway-frontend
-              ports:
-                - "8080:80"
-              networks:
-                - jzgateway-network
-              depends_on:
-                - backend
-
-          volumes:
-            postgres_data:
-
-          networks:
-            jzgateway-network:
-              driver: bridge
-          EOF
-
-          # YAML block scalar adds 10-space indentation to every heredoc line — strip it
-          sed -i 's/^          //' docker-compose.prod.yml
-
+          envsubst < docker-compose.prod.yml.template > docker-compose.prod.yml
           echo "=== Generated docker-compose.prod.yml ==="
           cat docker-compose.prod.yml
         env:
@@ -114,7 +51,7 @@ jobs:
           CREDENTIAL_ENCRYPTION_KEY: ${{ secrets.CREDENTIAL_ENCRYPTION_KEY }}
           MOOGOLD_BASE_URL: ${{ secrets.MOOGOLD_BASE_URL }}
 
-      # 4. Copy both files to the server in one SCP step (no strip_components needed)
+      # 4. SCP generated compose file + nginx config to the server
       - name: Copy configs to EC2
         uses: appleboy/scp-action@v0.1.7
         with:

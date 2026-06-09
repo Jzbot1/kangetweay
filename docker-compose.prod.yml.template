@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: jzgateway-postgres
+    environment:
+      POSTGRES_DB: goldbridge
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - jzgateway-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: jzgateway-redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    networks:
+      - jzgateway-network
+
+  backend:
+    image: ${DOCKERHUB_USERNAME}/jzgateway-backend:latest
+    container_name: jzgateway-backend
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - CREDENTIAL_ENCRYPTION_KEY=${CREDENTIAL_ENCRYPTION_KEY}
+      - MOOGOLD_BASE_URL=${MOOGOLD_BASE_URL}
+    networks:
+      - jzgateway-network
+    depends_on:
+      - postgres
+      - redis
+
+  frontend:
+    image: ${DOCKERHUB_USERNAME}/jzgateway-frontend:latest
+    container_name: jzgateway-frontend
+    ports:
+      - "8080:80"
+    networks:
+      - jzgateway-network
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  jzgateway-network:
+    driver: bridge
